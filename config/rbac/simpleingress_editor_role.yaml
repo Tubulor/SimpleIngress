@@ -1,0 +1,24 @@
+# permissions for end users to edit simpleingresses.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: simpleingress-editor-role
+rules:
+- apiGroups:
+  - sap.simpleingress.io
+  resources:
+  - simpleingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sap.simpleingress.io
+  resources:
+  - simpleingresses/status
+  verbs:
+  - get

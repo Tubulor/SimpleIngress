@@ -1,0 +1,63 @@
+apiVersion: sap.simpleingress.io/v1alpha1
+kind: SimpleIngress
+metadata:
+  name: simpleingress-sample
+  labels:
+    controller: simpleingress-sample
+spec:
+  #container:
+  #  containerPort: 80
+  rules:
+    - serviceIP: mansoor.127.0.0.1.nip.io
+      serviceName: httpbin-service
+    - serviceIP: 127.0.0.2
+      serviceName: httpbin-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  labels:
+    app: httpbin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      containers:
+        - name: httpbin
+          image: kennethreitz/httpbin
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      name: http
+      targetPort: 80
+  selector:
+    app: httpbin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-node-port
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30000
+  selector:
+    manger: controller-manager
+

@@ -1,0 +1,7 @@
+domain: simpleingress.io
+repo: SimpleIngressSAP
+resources:
+- group: sap
+  kind: SimpleIngress
+  version: v1alpha1
+version: "2"

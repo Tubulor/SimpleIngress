@@ -1,0 +1,1 @@
+{"rules":[{"serviceIP":"127.0.0.1:8081","serviceName":"httpbin-service"},{"serviceIP":"127.0.0.2","serviceName":"httpbin-service"}]}
