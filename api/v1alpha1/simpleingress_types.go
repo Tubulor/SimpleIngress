@@ -33,7 +33,6 @@ type SimpleIngressSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	Rules []Rule `json:"rules"`
-	//Container corev1.ContainerPort `json:"container"`
 }
 
 // SimpleIngressStatus defines the observed state of SimpleIngress

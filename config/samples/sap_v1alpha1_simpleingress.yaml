@@ -5,8 +5,6 @@ metadata:
   labels:
     controller: simpleingress-sample
 spec:
-  #container:
-  #  containerPort: 80
   rules:
     - serviceIP: mansoor.127.0.0.1.nip.io
       serviceName: httpbin-service
