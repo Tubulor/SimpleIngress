@@ -77,7 +77,7 @@ func main() {
 	}
 
 	go func() {
-		setupLog.Info("starting http reverse proxy on port 80")
+		setupLog.Info("Starting http reverse proxy on port 80")
 		http.HandleFunc("/", rp.ProxyHandler)
 		if err := http.ListenAndServe(":80", nil); err != nil {
 			panic(err)

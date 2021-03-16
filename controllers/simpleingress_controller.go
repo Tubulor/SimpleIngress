@@ -18,13 +18,10 @@ package controllers
 
 import (
 	sapv1alpha1 "SimpleIngressSAP/api/v1alpha1"
-	"SimpleIngressSAP/rp"
 	"context"
-	"encoding/json"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/go-logr/logr"
-	"io/ioutil"
 	"k8s.io/apimachinery/pkg/runtime"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -51,28 +48,13 @@ func (r *SimpleIngressReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	//var rules rp.ReverseProxyRules
-	//for _, rule := range simpleIngress.Spec.Rules {
-	//	rpRule := rp.Rule{ServiceIP: rule.ServiceIP, ServiceName: rule.ServiceName}
-	//	rules.ActiveRule = append(rules.ActiveRule, rpRule)
-	//}
+	CreateOrUpdateDBRules(simpleIngress, log)
 
 	var childSimpleIngress sapv1alpha1.SimpleIngressList
 	if err := r.List(ctx, &childSimpleIngress, client.InNamespace(req.Namespace)); err != nil {
 		log.Error(err, "unable to list child simple ingress")
 		return ctrl.Result{}, err
 	}
-
-	var rules rp.ReverseProxyRules
-	for _, item := range childSimpleIngress.Items {
-		for _, rule := range item.Spec.Rules {
-			rpRule := rp.Rule{ServiceIP: rule.ServiceIP, ServiceName: rule.ServiceName}
-			rules.ActiveRule = append(rules.ActiveRule, rpRule)
-		}
-	}
-
-	file, _ := json.Marshal(rules)
-	ioutil.WriteFile("ProxyRules.json", file, os.ModePerm)
 
 	return ctrl.Result{}, nil
 }
@@ -81,4 +63,31 @@ func (r *SimpleIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&sapv1alpha1.SimpleIngress{}).
 		Complete(r)
+}
+
+//func DeleteUnusedRulesFromDB() {
+//
+//}
+
+func CreateOrUpdateDBRules(simpleIngress sapv1alpha1.SimpleIngress, log logr.Logger) {
+	log.Info("HERE HERE")
+	db, err := badger.Open(badger.DefaultOptions("/rp/badger"))
+	if err != nil {
+		log.Error(err, "Failed to open reverse proxy rules database")
+	}
+	defer db.Close()
+
+	txn := db.NewTransaction(true)
+
+	// Add or Update new reverse proxy rules.
+	for _, rule := range simpleIngress.Spec.Rules {
+		serviceIP := []byte(rule.ServiceIP)
+		serviceName := []byte(rule.ServiceName)
+		if err := txn.Set(serviceIP, serviceName); err == badger.ErrTxnTooBig {
+			_ = txn.Commit()
+			txn = db.NewTransaction(true)
+			_ = txn.Set(serviceIP, serviceName)
+		}
+	}
+	_ = txn.Commit()
 }

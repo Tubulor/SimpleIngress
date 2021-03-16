@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: tubulor/simpleingress
-  newTag: latest
+  newTag: v1
