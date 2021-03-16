@@ -18,10 +18,14 @@ package controllers
 
 import (
 	sapv1alpha1 "SimpleIngressSAP/api/v1alpha1"
+	"SimpleIngressSAP/rp"
 	"context"
+	"encoding/json"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/go-logr/logr"
+	"io/ioutil"
 	"k8s.io/apimachinery/pkg/runtime"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -41,7 +45,6 @@ func (r *SimpleIngressReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 	ctx := context.Background()
 	log := r.Log.WithValues("simpleingress", req.NamespacedName)
 
-	// your logic here
 	var simpleIngress sapv1alpha1.SimpleIngress
 	if err := r.Get(ctx, req.NamespacedName, &simpleIngress); err != nil {
 		log.Error(err, "unable to fetch simpleingress")
@@ -49,12 +52,6 @@ func (r *SimpleIngressReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 	}
 
 	CreateOrUpdateDBRules(simpleIngress, log)
-
-	var childSimpleIngress sapv1alpha1.SimpleIngressList
-	if err := r.List(ctx, &childSimpleIngress, client.InNamespace(req.Namespace)); err != nil {
-		log.Error(err, "unable to list child simple ingress")
-		return ctrl.Result{}, err
-	}
 
 	return ctrl.Result{}, nil
 }
@@ -65,29 +62,21 @@ func (r *SimpleIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-//func DeleteUnusedRulesFromDB() {
-//
-//}
-
-func CreateOrUpdateDBRules(simpleIngress sapv1alpha1.SimpleIngress, log logr.Logger) {
-	log.Info("HERE HERE")
+func DeleteUnusedRulesFromDB(simpleIngress sapv1alpha1.SimpleIngress, log logr.Logger) {
 	db, err := badger.Open(badger.DefaultOptions("/rp/badger"))
 	if err != nil {
 		log.Error(err, "Failed to open reverse proxy rules database")
 	}
 	defer db.Close()
 
-	txn := db.NewTransaction(true)
+}
 
-	// Add or Update new reverse proxy rules.
+func CreateOrUpdateDBRules(simpleIngress sapv1alpha1.SimpleIngress, log logr.Logger) {
+	var rules rp.ReverseProxyRules
 	for _, rule := range simpleIngress.Spec.Rules {
-		serviceIP := []byte(rule.ServiceIP)
-		serviceName := []byte(rule.ServiceName)
-		if err := txn.Set(serviceIP, serviceName); err == badger.ErrTxnTooBig {
-			_ = txn.Commit()
-			txn = db.NewTransaction(true)
-			_ = txn.Set(serviceIP, serviceName)
-		}
+		rpRule := rp.Rule{ServiceIP: rule.ServiceIP, ServiceName: rule.ServiceName}
+		rules.ActiveRule = append(rules.ActiveRule, rpRule)
 	}
-	_ = txn.Commit()
+	file, _ := json.Marshal(rules)
+	ioutil.WriteFile("ProxyRules.json", file, os.ModePerm)
 }

@@ -6,7 +6,7 @@ metadata:
     controller: simpleingress-sample
 spec:
   rules:
-    - serviceIP: tubul.127.0.0.1.nip.io
+    - serviceIP: tubul.127.0.0.1.nip.io:8081
       serviceName: httpbin-service
     - serviceIP: hadar.127.0.0.1.nip.io
       serviceName: httpbin-service

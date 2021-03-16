@@ -1,1 +1,1 @@
-{"rules":[{"serviceIP":"127.0.0.1:8081","serviceName":"httpbin-service"},{"serviceIP":"127.0.0.2","serviceName":"httpbin-service"}]}
+{"rules":[{"serviceIP":"tubul.127.0.0.1.nip.io:8081","serviceName":"httpbin-service"},{"serviceIP":"hadar.127.0.0.1.nip.io","serviceName":"httpbin-service"}]}
