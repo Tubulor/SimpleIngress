@@ -5,12 +5,21 @@ metadata:
   labels:
     controller: simpleingress-sample
 spec:
-  #container:
-  #  containerPort: 80
   rules:
-    - serviceIP: mansoor.127.0.0.1.nip.io
+    - serviceIP: httpbin.127.0.0.1.nip.io
       serviceName: httpbin-service
-    - serviceIP: 127.0.0.2
+---
+apiVersion: sap.simpleingress.io/v1alpha1
+kind: SimpleIngress
+metadata:
+  name: simpleingress-sample-2
+  labels:
+    controller: simpleingress-sample
+spec:
+  rules:
+    - serviceIP: tubul.127.0.0.1.nip.io
+      serviceName: httpbin-service
+    - serviceIP: or.127.0.0.1.nip.io
       serviceName: httpbin-service
 ---
 apiVersion: apps/v1

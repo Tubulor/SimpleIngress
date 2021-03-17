@@ -33,16 +33,17 @@ type SimpleIngressSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	Rules []Rule `json:"rules"`
-	//Container corev1.ContainerPort `json:"container"`
 }
 
 // SimpleIngressStatus defines the observed state of SimpleIngress
 type SimpleIngressStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	ActiveRules []Rule `json:"activeRules"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // SimpleIngress is the Schema for the simpleingresses API
 type SimpleIngress struct {

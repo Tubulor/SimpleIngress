@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"SimpleIngressSAP/db"
 	"SimpleIngressSAP/rp"
 	"flag"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -66,19 +67,28 @@ func main() {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
+	// Start DB
+	badgerDB, err := db.StartDBService()
+	if err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "SimpleIngress")
+		os.Exit(1)
+	}
+	// Creating new RP Service
+	reverseProxy := rp.NewReverseProxyService(badgerDB)
 
 	if err = (&controllers.SimpleIngressReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("SimpleIngress"),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Log:      ctrl.Log.WithName("controllers").WithName("SimpleIngress"),
+		Scheme:   mgr.GetScheme(),
+		Database: badgerDB,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SimpleIngress")
 		os.Exit(1)
 	}
 
 	go func() {
-		setupLog.Info("starting http reverse proxy on port 80")
-		http.HandleFunc("/", rp.ProxyHandler)
+		setupLog.Info("Starting http reverse proxy on port 80")
+		http.HandleFunc("/", reverseProxy.ProxyHandler)
 		if err := http.ListenAndServe(":80", nil); err != nil {
 			panic(err)
 		}
@@ -89,6 +99,7 @@ func main() {
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
+		db.StopDBService(badgerDB)
 		os.Exit(1)
 	}
 
