@@ -6,7 +6,7 @@ metadata:
     controller: simpleingress-sample
 spec:
   rules:
-    - serviceIP: ort.127.0.0.1.nip.io:8081
+    - serviceIP: hadar.127.0.0.1.nip.io
       serviceName: httpbin-service
 ---
 apiVersion: sap.simpleingress.io/v1alpha1

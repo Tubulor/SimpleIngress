@@ -19,7 +19,6 @@ package controllers
 import (
 	sapv1alpha1 "SimpleIngressSAP/api/v1alpha1"
 	"context"
-	"fmt"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -53,12 +52,6 @@ func (r *SimpleIngressReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	//isExist := isRuleExist(simpleIngress, r.Database)
-	//if isExist {
-	//	log.Info("Failed to update reverse proxy rules configuration - rule already exist for this service ip")
-	//	return ctrl.Result{}, errors.New("failed to update reverse proxy rules configuration - rule already exist for this service ip")
-	//}
-
 	var childSimpleIngress sapv1alpha1.SimpleIngressList
 	if err := r.List(ctx, &childSimpleIngress, client.InNamespace(req.Namespace)); err != nil {
 		log.Error(err, "unable to list child simple ingress")
@@ -86,34 +79,6 @@ func (r *SimpleIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&sapv1alpha1.SimpleIngress{}).
 		Complete(r)
-}
-
-func isRuleExist(simpleIngress sapv1alpha1.SimpleIngress, db *badger.DB) bool {
-	isExist := false
-	for _, rule := range simpleIngress.Spec.Rules {
-		err := db.View(func(txn *badger.Txn) error {
-			_, err := txn.Get([]byte(rule.ServiceIP))
-			if err != nil && err.Error() == "Key not found" {
-				return err
-			}
-			return nil
-		})
-		if err == nil {
-			isExist = true
-		}
-	}
-	// If this rule already exist in Active rule it must be an update from consumer - relate as not exist.
-	if isExist {
-		for _, rule := range simpleIngress.Spec.Rules {
-			for _, activeRule := range simpleIngress.Status.ActiveRules {
-				if rule.ServiceIP == activeRule.ServiceIP {
-					fmt.Printf("Active rules: %v, %v", rule.ServiceIP, rule.ServiceName)
-					isExist = false
-				}
-			}
-		}
-	}
-	return isExist
 }
 
 func DeleteInactiveRules(simpleIngress sapv1alpha1.SimpleIngressList, db *badger.DB, log logr.Logger) error {

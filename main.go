@@ -74,7 +74,7 @@ func main() {
 		os.Exit(1)
 	}
 	// Creating new RP Service
-	rp := rp.NewReverseProxyService(badgerDB)
+	reverseProxy := rp.NewReverseProxyService(badgerDB)
 
 	if err = (&controllers.SimpleIngressReconciler{
 		Client:   mgr.GetClient(),
@@ -88,7 +88,7 @@ func main() {
 
 	go func() {
 		setupLog.Info("Starting http reverse proxy on port 80")
-		http.HandleFunc("/", rp.ProxyHandler)
+		http.HandleFunc("/", reverseProxy.ProxyHandler)
 		if err := http.ListenAndServe(":80", nil); err != nil {
 			panic(err)
 		}
