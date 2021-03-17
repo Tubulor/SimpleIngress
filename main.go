@@ -99,6 +99,7 @@ func main() {
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
+		db.StopDBService(badgerDB)
 		os.Exit(1)
 	}
 
