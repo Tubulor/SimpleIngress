@@ -6,9 +6,20 @@ metadata:
     controller: simpleingress-sample
 spec:
   rules:
+    - serviceIP: ort.127.0.0.1.nip.io:8081
+      serviceName: httpbin-service
+---
+apiVersion: sap.simpleingress.io/v1alpha1
+kind: SimpleIngress
+metadata:
+  name: simpleingress-sample-2
+  labels:
+    controller: simpleingress-sample
+spec:
+  rules:
     - serviceIP: tubul.127.0.0.1.nip.io:8081
       serviceName: httpbin-service
-    - serviceIP: hadar.127.0.0.1.nip.io
+    - serviceIP: ort.127.0.0.1.nip.io:8081
       serviceName: httpbin-service
 ---
 apiVersion: apps/v1

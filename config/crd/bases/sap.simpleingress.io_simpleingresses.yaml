@@ -15,6 +15,8 @@ spec:
     plural: simpleingresses
     singular: simpleingress
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: SimpleIngress is the Schema for the simpleingresses API
@@ -50,6 +52,24 @@ spec:
           type: object
         status:
           description: SimpleIngressStatus defines the observed state of SimpleIngress
+          properties:
+            activeDB:
+              type: boolean
+            activeRules:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              items:
+                properties:
+                  serviceIP:
+                    type: string
+                  serviceName:
+                    type: string
+                type: object
+              type: array
+          required:
+          - activeDB
+          - activeRules
           type: object
       type: object
   version: v1alpha1
