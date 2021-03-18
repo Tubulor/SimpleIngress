@@ -1,18 +1,8 @@
-apiVersion: sap.simpleingress.io/v1alpha1
-kind: SimpleIngress
-metadata:
-  name: simpleingress-sample
-  labels:
-    controller: simpleingress-sample
-spec:
-  rules:
-    - serviceIP: httpbin.127.0.0.1.nip.io
-      serviceName: httpbin-service
 ---
 apiVersion: sap.simpleingress.io/v1alpha1
 kind: SimpleIngress
 metadata:
-  name: simpleingress-sample-2
+  name: simpleingress-sample
   labels:
     controller: simpleingress-sample
 spec:
